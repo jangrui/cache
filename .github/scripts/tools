@@ -19,6 +19,7 @@ readonly -A REPOS=(
   [YQ]=mikefarah/yq
   [UPX]=upx/upx
   [SHELLCHECK]=koalaman/shellcheck
+  [BUILDAH]=podman-container-tools/buildah
 )
 for name in ${!REPOS[*]}; do
   export "$name"="$(
@@ -37,11 +38,18 @@ until curl -sL "https://get.helm.sh/helm-v$HELM-linux-$ARCH.tar.gz" | tar -xz "l
 until curl -sLo yq "https://github.com/mikefarah/yq/releases/download/v$YQ/yq_linux_$ARCH"; do sleep 3; done
 until curl -sL "https://github.com/upx/upx/releases/download/v$UPX/upx-$UPX-${ARCH}_linux.tar.xz" | tar -xJ "upx-$UPX-${ARCH}_linux/upx" --strip-components=1; do sleep 3; done
 until curl -sL "https://github.com/koalaman/shellcheck/releases/download/v$SHELLCHECK/shellcheck-v$SHELLCHECK.linux.$ALIAS_ARCH.tar.xz" | tar xJ "shellcheck-v$SHELLCHECK/shellcheck" --strip-components=1; do sleep 3; done
+# Fork fix: buildah releases ship no binaries, and the muicoder image is
+# stuck at v1.42.2. Build the static binary from source with buildah's own
+# Makefile cross target (bin/buildah.linux.<arch>); upstream repo moved
+# from containers/buildah to podman-container-tools/buildah.
+buildah_src="$(mktemp -d)"
+git clone --depth 1 --branch "v$BUILDAH" "https://github.com/podman-container-tools/buildah.git" "$buildah_src"
+make -C "$buildah_src" "bin/buildah.linux.$ARCH"
+cp "$buildah_src/bin/buildah.linux.$ARCH" ./buildah
+rm -rf "$buildah_src"
 find . -type f -exec file {} \; | grep -E "(executable,|/ld-)" | awk -F: '{print $1}' | grep -vE "\.so" | while IFS='' read -r elf; do sudo chmod a+x "$elf" && binary_verify "$elf"; done
 cat <<EOF >"/tmp/$image_tag"
-FROM muicoder/containers:v1.42.2 AS buildah
 FROM alpine:3
-COPY --from=buildah /usr/local/sbin /tools
 COPY . /tools
 EOF
 tree -L 5
@@ -51,7 +59,7 @@ docker buildx build \
   --no-cache \
   --push \
   --label "org.opencontainers.image.source=https://github.com/$REPOSITORY" \
-  --label "org.opencontainers.image.description=helm-v$HELM,yq-v$YQ,upx-v$UPX container image" \
+  --label "org.opencontainers.image.description=helm-v$HELM,yq-v$YQ,upx-v$UPX,buildah-v$BUILDAH container image" \
   --label "org.opencontainers.image.licenses=MIT" \
   -t "$REGISTRY/$REPOSITORY:$image_tag" \
   -f "/tmp/$image_tag" \
