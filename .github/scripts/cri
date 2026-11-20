@@ -95,10 +95,10 @@ until curl -sL "https://github.com/distribution/distribution/releases/download/v
   pushd lib
   case $ARCH in
   amd64)
-    sudo cp -a "opt/libseccomp/lib/libseccomp.so"* .
+    sudo cp -a "opt/runc-dylibs/lib/libseccomp.so"* .
     ;;
   *)
-    sudo cp -a "opt/libseccomp/$ARCH/lib/libseccomp.so"* .
+    sudo cp -a "opt/runc-dylibs/$ARCH/lib/libseccomp.so"* .
     ;;
   esac
   sudo rm -rf opt
