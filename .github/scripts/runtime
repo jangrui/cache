@@ -28,7 +28,7 @@ pushd "$(mktemp -d)" >/dev/null
   export "$(grep -E "LIBSECCOMP_VERSION=[0-9]" Dockerfile | awk '{print $NF}')"
   tree -L 5
   docker build -t "seccomp/libseccomp:v$LIBSECCOMP_VERSION" .
-  docker run --rm -v "$PWD:/pwd" -w /pwd --entrypoint /bin/sh "seccomp/libseccomp:v$LIBSECCOMP_VERSION" -c "tar -zcf libseccomp-v$LIBSECCOMP_VERSION.tgz /opt/libseccomp"
+  docker run --rm -v "$PWD:/pwd" -w /pwd --entrypoint /bin/sh "seccomp/libseccomp:v$LIBSECCOMP_VERSION" -c "tar -zcf libseccomp-v$LIBSECCOMP_VERSION.tgz /opt/runc-dylibs"
   popd >/dev/null
 }
 cp "runc-$RUNC/libseccomp-v$LIBSECCOMP_VERSION.tgz" .
