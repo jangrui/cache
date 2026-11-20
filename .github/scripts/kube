@@ -66,7 +66,7 @@ EOF
 
   sealos version &>/dev/null || (
     sealos_tag="sealos-$(
-      until git ls-remote --refs --sort="-version:refname" --tags "https://github.com/labring/sealos.git" | cut -d/ -f3- | grep -E "^v4[0-9.]+$"; do sleep 3; done | head -n 1
+      until git ls-remote --refs --sort="-version:refname" --tags "https://github.com/labring/sealos.git" | cut -d/ -f3- | grep -E "^v5[0-9.]+$"; do sleep 3; done | head -n 1
     )-amd64"
     until sudo docker run --rm -v "/usr/bin:/pwd" -w /sealos --entrypoint /bin/sh "$REGISTRY/$REPOSITORY:$sealos_tag" -c "cp -au sealos /pwd"; do sleep 5; done
   )
