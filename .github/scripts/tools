@@ -42,9 +42,14 @@ until curl -sL "https://github.com/koalaman/shellcheck/releases/download/v$SHELL
 # stuck at v1.42.2. Build the static binary from source with buildah's own
 # Makefile cross target (bin/buildah.linux.<arch>); upstream repo moved
 # from containers/buildah to podman-container-tools/buildah.
+# CGO_ENABLED=0 is required: a native amd64 build defaults to cgo on and
+# pulls in the btrfs driver, which needs btrfs/ioctl.h (absent on the
+# runner); with cgo off the cgo-gated drivers are excluded and the binary
+# is fully static. (arm64 passed without it only because cross-compiling
+# disables cgo by default.)
 buildah_src="$(mktemp -d)"
 git clone --depth 1 --branch "v$BUILDAH" "https://github.com/podman-container-tools/buildah.git" "$buildah_src"
-make -C "$buildah_src" "bin/buildah.linux.$ARCH"
+CGO_ENABLED=0 make -C "$buildah_src" "bin/buildah.linux.$ARCH"
 cp "$buildah_src/bin/buildah.linux.$ARCH" ./buildah
 rm -rf "$buildah_src"
 find . -type f -exec file {} \; | grep -E "(executable,|/ld-)" | awk -F: '{print $1}' | grep -vE "\.so" | while IFS='' read -r elf; do sudo chmod a+x "$elf" && binary_verify "$elf"; done
