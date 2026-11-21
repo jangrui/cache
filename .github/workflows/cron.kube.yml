@@ -1,4 +1,7 @@
-jobs:
+permissions:
+  contents: read
+    packages: write
+    jobs:
   CHANGELOG:
     outputs:
       matrix: ${{ steps.set-kube.outputs.matrix }}
