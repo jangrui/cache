@@ -1,4 +1,7 @@
-jobs:
+permissions:
+  contents: read
+    packages: write
+    jobs:
   caching:
     runs-on: ubuntu-24.04
     steps:
