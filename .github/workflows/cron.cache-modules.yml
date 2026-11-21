@@ -4,7 +4,10 @@ env:
   REPOSITORY: ${{ github.repository }}
   REPOSITORY_OWNER: ${{ github.repository_owner }}
   REPOSITORY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-jobs:
+permissions:
+  contents: read
+    packages: write
+    jobs:
   module:
     needs:
       - versions
