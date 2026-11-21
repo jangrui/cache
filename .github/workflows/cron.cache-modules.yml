@@ -6,8 +6,9 @@ env:
   REPOSITORY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 permissions:
   contents: read
-    packages: write
-    jobs:
+  packages: write
+
+jobs:
   module:
     needs:
       - versions
